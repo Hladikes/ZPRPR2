@@ -1,0 +1,6 @@
+Úloha 3.1: Napíšte program, ktorý zo štandardného vstupu (klávesnice) načíta
+znak. Ďalej číta znaky zo súboru znak.txt. Ak program prečítal zo
+štandardného vstupu (klávesnice) 's', vypisuje načítané znaky do
+súboru novy.txt. Ak načítal ľubovoľný iný znak, vypisuje načítané znaky na
+štandardný výstup (obrazovku). Súbor novy.txt alebo štandardný výstup bude
+teda obsahovať presnú kópiu obsahu súboru znak.txt.
