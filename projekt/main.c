@@ -102,9 +102,9 @@ bool o_vendorExists(FILE *, int, int);
 
 void n(
     FILE **goods,
-    int goodsQuantity,
+    int *goodsQuantity,
     FILE **vendors,
-    int vendorsQuantity,
+    int *vendorsQuantity,
     char ***productsNames,
     int **productsQuantities,
     int **productsVendorIds,
@@ -208,9 +208,9 @@ int main() {
 
       n(
           &goods,
-          goodsQuantity,
+          &goodsQuantity,
           &vendors,
-          vendorsQuantity,
+          &vendorsQuantity,
           &productsNames,
           &productsQuantities,
           &productsVendorIds,
@@ -453,9 +453,9 @@ bool o_vendorExists(FILE *vendors, int vendorsQuantity, int vendorIdToFind) {
 
 void n(
     FILE **goods,
-    int goodsQuantity,
+    int *goodsQuantity,
     FILE **vendors,
-    int vendorsQuantity,
+    int *vendorsQuantity,
     char ***productsNames,
     int **productsQuantities,
     int **productsVendorIds,
@@ -464,8 +464,11 @@ void n(
     int **vendorIds,
     char ***vendorsNames,
     char ***vendorsAddresses) {
-  n_goods(goods, goodsQuantity, productsNames, productsQuantities, productsVendorIds, productsPrices, productsWeights);
-  n_vendors(vendors, vendorsQuantity, vendorIds, vendorsNames, vendorsAddresses);
+
+  _getQuantity(*goods, goodsQuantity, 5);
+  _getQuantity(*vendors, vendorsQuantity, 4);
+  n_goods(goods, *goodsQuantity, productsNames, productsQuantities, productsVendorIds, productsPrices, productsWeights);
+  n_vendors(vendors, *vendorsQuantity, vendorIds, vendorsNames, vendorsAddresses);
 }
 
 void n_goods(
@@ -569,6 +572,7 @@ void h(int goodsQuantity, int *productsQuantities) {
   int quantities[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   for (int i = 0; i < goodsQuantity; i++) {
     int index = productsQuantities[i] / 10;
+    if (index > 9) continue;
     quantities[index]++;
   }
   for (int i = 0; i < 10; i++) {
@@ -611,12 +615,13 @@ void p(
   for (int i = 0; i < goodsQuantity; i++) {
     fprintf(
         goods,
-        "%s\n%d\n%g\n%g\n%d\n\n",
+        "%s\n%d\n%g\n%g\n%d\n%s",
         productsNames[i],
         productsQuantities[i],
         productsPrices[i],
         productsWeights[i],
-        productsVendorIds[i]);
+        productsVendorIds[i],
+        i == (goodsQuantity - 1) ? "" : "\n");
   }
   fclose(goods);
 }
