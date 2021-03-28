@@ -169,7 +169,7 @@ int main() {
   bool loop = true;
   char c;
   while (loop) {
-    prompt("> ", "%c", &c);
+    prompt("", "%c", &c);
 
     if (c == 'v') v(&goods, &goodsQuantity, &vendors, &vendorsQuantity);
 
@@ -301,6 +301,7 @@ int main() {
 void v(FILE **goods, int *goodsQuantity, FILE **vendors, int *vendorsQuantity) {
   v_goods(goods, goodsQuantity);
   _divider();
+  puts("");
   v_vendors(vendors, vendorsQuantity);
 }
 
@@ -623,6 +624,8 @@ void p(
         productsVendorIds[i],
         i == (goodsQuantity - 1) ? "" : "\n");
   }
+  // TODO novy pocet tovaru vypisat
+  free(productName);
   fclose(goods);
 }
 
@@ -637,7 +640,7 @@ void z(int goodsQuantity, char **productsNames, double *productsWeights) {
   }
 
   for (int i = 0; i < goodsQuantity; i++) {
-    if (productsWeights[i] > min && productsWeights[i] < max) {
+    if (productsWeights[i] >= min && productsWeights[i] <= max) {
       printf("%s\n", productsNames[i]);
     }
   }
