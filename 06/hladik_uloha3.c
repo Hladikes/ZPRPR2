@@ -15,16 +15,19 @@
 #define true 1
 #define false 0
 
-int dlzka(char *str) {
-  
+#define STR_LENGTH 100
+
+int dlzka(int i, char str[]) { 
+  return (str[i] == '\0') ? 0 : 1 + dlzka(i + 1, str);
 }
 
 int main() {
-  char str[30];
+  printf("Press * for exit\n");
+  char buffer[STR_LENGTH], c;
   while (true) {
-    prompt("Zadaj slovo (pre koniec *): ", "%s", str);
-    
-    if (str[0] == '*') break;
+    fscanf(stdin, "%s%c", buffer, &c);
+    printf("%d %c", dlzka(0, buffer), c == '\n' ? c : ' ');
+    if (buffer[0] == '*') break;
   }
   return 0;
 }
