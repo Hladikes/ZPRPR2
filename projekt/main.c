@@ -625,6 +625,7 @@ void p(
         i == (goodsQuantity - 1) ? "" : "\n");
   }
   // TODO novy pocet tovaru vypisat
+  printf("Aktualny pocet kusov na sklade tovaru %s je: %d\n", productName, newProductQuantity);
   free(productName);
   fclose(goods);
 }
