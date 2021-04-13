@@ -13,3 +13,15 @@ Jablkova 61, Bratislava
 4
 Vibro
 Slivkova 97, Bratislava
+
+5
+Skoda
+Marhulova 17, Bratislava
+
+6
+Dodavatel_6
+Karpatska 17, Bratislava
+
+7
+Dodavatel_7
+Karpatska 17, Bratislava
