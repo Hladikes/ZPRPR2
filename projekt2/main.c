@@ -10,8 +10,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define prompt(n, k, ...) printf("%s", n);scanf(k, __VA_ARGS__);fseek(stdin,0,SEEK_SET);
-#define validatedPrompt(msg, condition, errmsg, format, ...) {  do{prompt(msg,format,__VA_ARGS__);if(!(condition)){printf("%s", errmsg);}}while(!(condition));  }
+#define prompt(n, k, ...) \
+  printf("%s", n);        \
+  scanf(k, __VA_ARGS__);  \
+  fseek(stdin, 0, SEEK_SET);
+#define validatedPrompt(msg, condition, errmsg, format, ...) \
+  {                                                          \
+    do {                                                     \
+      prompt(msg, format, __VA_ARGS__);                      \
+      if (!(condition)) {                                    \
+        printf("%s", errmsg);                                \
+      }                                                      \
+    } while (!(condition));                                  \
+  }
 #define bool char
 #define true 1
 #define false 0
@@ -53,7 +64,7 @@ char _chin() {
 }
 
 char *_strin(int size) {
-  char *str = (char*) calloc(size, sizeof(char));
+  char *str = (char *)calloc(size, sizeof(char));
   fgets(str, size, stdin);
   fseek(stdin, 0, SEEK_SET);
   return str;
@@ -66,7 +77,7 @@ int _intin() {
   return n;
 }
 
-int _dblin() {
+double _dblin() {
   double d = 0;
   scanf("%lf", &d);
   fseek(stdin, 0, SEEK_SET);
@@ -80,30 +91,29 @@ bool _isGuestDelimiter(char *str) {
 }
 
 Guest *_readGuest(FILE *f) {
-  Guest *guest = (Guest*) malloc(sizeof(Guest));
+  Guest *guest = (Guest *)malloc(sizeof(Guest));
 
-  guest->name = (char*) calloc(NAME_LENGTH, sizeof(char));
+  guest->name = (char *)calloc(NAME_LENGTH, sizeof(char));
   fgets(guest->name, NAME_LENGTH, f);
   _removeTrailingNewline(guest->name);
 
-  guest->address = (char*) calloc(ADDRESS_LENGTH, sizeof(char));
+  guest->address = (char *)calloc(ADDRESS_LENGTH, sizeof(char));
   fgets(guest->address, NAME_LENGTH, f);
   _removeTrailingNewline(guest->address);
 
   fscanf(f, "%d %d ", &(guest->reservationStart), &(guest->reservationEnd));
-  
+
   guest->nextGuest = NULL;
   return guest;
 }
 
 void _printGuest(Guest *g) {
   printf(
-    "[ GUEST ]\n|- name:'%s'\n|- address:'%s'\n|- rstart:'%d'\n|- rend:'%d'\n\n",
-    g->name,
-    g->address,
-    g->reservationStart,
-    g->reservationEnd
-  );
+      "[ GUEST ]\n|- name:'%s'\n|- address:'%s'\n|- rstart:'%d'\n|- rend:'%d'\n\n",
+      g->name,
+      g->address,
+      g->reservationStart,
+      g->reservationEnd);
 }
 
 Guest *_getLastGuest(Guest *g) {
@@ -118,11 +128,11 @@ void _pushGuest(Guest *dest, Guest *src) {
 }
 
 // https://stackoverflow.com/a/6417182/4396543
-void _freeGuest(Guest *g) {
+void _freeGuest(Guest **g) {
   Guest *temp;
-  while (g != NULL) {
-    temp = g;
-    g = g->nextGuest;
+  while ((*g) != NULL) {
+    temp = (*g);
+    (*g) = (*g)->nextGuest;
     free(temp->name);
     free(temp->address);
     free(temp);
@@ -136,7 +146,7 @@ bool _isRoomDelimiter(char *str) {
 }
 
 Room *_readRoom(FILE *f) {
-  Room *room = (Room*) malloc(sizeof(Room));
+  Room *room = (Room *)malloc(sizeof(Room));
   fscanf(f, "%d %d %lf ", &(room->id), &(room->size), &(room->price));
   room->nextRoom = NULL;
   room->firstGuest = NULL;
@@ -145,11 +155,10 @@ Room *_readRoom(FILE *f) {
 
 void _printRoom(Room *r) {
   printf(
-    "[ ROOM ]\n|- id:'%d'\n|- size:'%d'\n|- price:'%lf'\n\n",
-    r->id,
-    r->size,
-    r->price
-  );
+      "[ ROOM ]\n|- id:'%d'\n|- size:'%d'\n|- price:'%lf'\n\n",
+      r->id,
+      r->size,
+      r->price);
 }
 
 Room *_getLastRoom(Room *r) {
@@ -164,41 +173,69 @@ void _pushRoom(Room *dest, Room *src) {
 }
 
 // https://stackoverflow.com/a/6417182/4396543
-void _freeRoom(Room *r) {
+void _freeRoom(Room **r) {
+  if (!(*r)) return;
+
   Room *temp;
-  _freeGuest(r->firstGuest);
-  while (r != NULL) {
-    temp = r;
-    r = r->nextRoom;
+  _freeGuest(&((*r)->firstGuest));
+  while ((*r) != NULL) {
+    temp = (*r);
+    (*r) = (*r)->nextRoom;
     free(temp);
   }
 }
 
 // hotel
 
-void _printHotel(Room *r) {
+// void _printHotel(Room *r) {
+//   while (r) {
+//     int _padleft = 1;
+//     Guest *g = r->firstGuest;
+//     printf("|_ Room %d\n", r->id);
+
+//     while (g) {
+//       for (int i = 0; i < _padleft; i++) printf("  ");
+//       printf("|_ %s\n", g->name);
+//       _padleft++;
+//       g = g->nextGuest;
+//     }
+//     r = r->nextRoom;
+//     printf("\n");
+//   }
+// }
+
+void _saveHotel(Room *r) {
+  FILE *hotel = fopen("./hotel.txt", "w");
+  if (!hotel) exit(ERR_FILE);
+
   while (r) {
-    int _padleft = 1;
+    fprintf(
+        hotel,
+        "---\n%d\n%d\n%g\n",
+        r->id,
+        r->size,
+        r->price);
+
     Guest *g = r->firstGuest;
-    printf("|_ Room %d\n", r->id);
-    
     while (g) {
-      for (int i = 0; i < _padleft; i++) printf("  ");
-      printf("|_ %s\n", g->name);
-      _padleft++;
+      fprintf(
+          hotel,
+          "#\n%s\n%s\n%d\n%d\n",
+          g->name,
+          g->address,
+          g->reservationStart,
+          g->reservationEnd);
       g = g->nextGuest;
     }
     r = r->nextRoom;
-    printf("\n");
   }
+  fclose(hotel);
 }
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 void n(Room **firstRoom, bool output) {
-  if (*firstRoom) {
-    _freeRoom(*firstRoom);
-  }
+  if (*firstRoom) _freeRoom(firstRoom);
 
   FILE *hotel = fopen("./hotel.txt", "r");
   if (!hotel) {
@@ -206,11 +243,11 @@ void n(Room **firstRoom, bool output) {
     exit(ERR_FILE);
   }
 
-  *firstRoom = _readRoom(hotel);
+  // *firstRoom = _readRoom(hotel);
   Room *r = *firstRoom;
   Guest *g = NULL;
 
-  int records = 1;
+  int records = 0;
 
   char buffer[1024];
   while (fgets(buffer, 1024, hotel)) {
@@ -222,13 +259,16 @@ void n(Room **firstRoom, bool output) {
         g->nextGuest = _readGuest(hotel);
         g = g->nextGuest;
       }
-
-      records++;
     }
-    
+
     if (_isRoomDelimiter(buffer)) {
-      r->nextRoom = _readRoom(hotel);
-      r = r->nextRoom;
+      if (!r) {
+        *firstRoom = _readRoom(hotel);
+        r = *firstRoom;
+      } else {
+        r->nextRoom = _readRoom(hotel);
+        r = r->nextRoom;
+      }
       g = r->firstGuest;
 
       records++;
@@ -236,10 +276,10 @@ void n(Room **firstRoom, bool output) {
   }
 
   fclose(hotel);
-  if (output) printf("Nacitalo sa <%d> zaznamov\n", records);
+  if (output) printf("Nacitalo sa %d zaznamov\n", records);
 }
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Room *v_findSmallestRoom(Room *from, int idOffset) {
   Room *smallest = NULL;
@@ -259,22 +299,20 @@ void v_printRoom(Room *r) {
   if (!r) return;
 
   Guest *g = r->firstGuest;
-    
+
   printf(
-    "Izba cislo: %d\nPocet lozok: %d\nCena: %g\nZoznam hosti:\n",
-    r->id,
-    r->size,
-    r->price
-  );
-  
+      "Izba cislo: %d\nPocet lozok: %d\nCena: %g\nZoznam hosti:\n",
+      r->id,
+      r->size,
+      r->price);
+
   while (g) {
     printf(
-      "Meno: %s\nAdresa: %s\nZaciatok rezervacie: %d\nKoniec rezervacie: %d\n",
-      g->name,
-      g->address,
-      g->reservationStart,
-      g->reservationEnd
-    );
+        "Meno: %s\nAdresa: %s\nZaciatok rezervacie: %d\nKoniec rezervacie: %d\n",
+        g->name,
+        g->address,
+        g->reservationStart,
+        g->reservationEnd);
 
     g = g->nextGuest;
     if (g) {
@@ -284,6 +322,8 @@ void v_printRoom(Room *r) {
 }
 
 void v(Room *hotel) {
+  if (!hotel) return;
+
   Room *temp = NULL;
   bool showHotelDivier = false;
   while ((temp = v_findSmallestRoom(hotel, temp ? temp->id : 0)) != NULL) {
@@ -295,27 +335,29 @@ void v(Room *hotel) {
   }
 }
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-void r() {
+void r(Room **hotel) {
+  // if (!(*hotel)) return;
+
   FILE *f = fopen("./hotel.txt", "a");
   if (!f) exit(ERR_FILE);
 
   int id = _intin();
   int size = _intin();
   double price = _dblin();
+  int count = _intin();
   fprintf(
-    f,
-    "---\n%d\n%d\n%g\n",
-    id,
-    size,
-    price
-  );
+      f,
+      "---\n%d\n%d\n%g\n",
+      id,
+      size,
+      price);
 
   char *name = NULL, *address = NULL;
   int r_start = 0, r_end = 0;
-  
-  for (int n = 0; n < size; n++) {
+
+  for (int n = 0; n < count; n++) {
     name = _strin(NAME_LENGTH);
     address = _strin(ADDRESS_LENGTH);
     _removeTrailingNewline(name);
@@ -324,22 +366,22 @@ void r() {
     r_start = _intin();
     r_end = _intin();
     fprintf(
-      f,
-      "#\n%s\n%s\n%d\n%d\n",
-      name,
-      address,
-      r_start,
-      r_end
-    );
+        f,
+        "#\n%s\n%s\n%d\n%d\n",
+        name,
+        address,
+        r_start,
+        r_end);
 
     free(name);
     free(address);
   }
 
   fclose(f);
+  n(hotel, false);
 }
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 bool h_isReserved(Room *r, int reservationDate) {
   Guest *g = r->firstGuest;
@@ -355,6 +397,8 @@ bool h_isReserved(Room *r, int reservationDate) {
 }
 
 void h(Room *hotel) {
+  if (!hotel) return;
+
   int reservationDate = _intin();
 
   Room *temp = NULL;
@@ -362,14 +406,71 @@ void h(Room *hotel) {
 
   while ((temp = v_findSmallestRoom(hotel, temp ? temp->id : 0)) != NULL) {
     if (h_isReserved(temp, reservationDate)) {
-      printf("%g\n", temp->price);
+      printf("%d\n", temp->id);
       isSomeRoomReserved = true;
-    }  
+    }
   }
 
   if (!isSomeRoomReserved) {
-    printf("K datumu <%d> neevidujeme rezervaciu.\n", reservationDate);
+    printf("K datumu %d neevidujeme rezervaciu.\n", reservationDate);
   }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+void z(Room **hotel) {
+  if (!(*hotel)) return;
+
+  int idToDelete = _intin();
+
+  Room *r = *hotel;
+
+  if (r->id == idToDelete) {
+    *hotel = r->nextRoom;
+    r->nextRoom = NULL;
+    _freeRoom(&r);
+    _saveHotel(*hotel);
+    printf("Rezervacia izby cislo %d bola zrusena.\n", idToDelete);
+    return;
+  }
+
+  while (r) {
+    if (r->nextRoom && r->nextRoom->id == idToDelete) {
+      printf("Rezervacia izby cislo %d bola zrusena.\n", idToDelete);
+      Room *roomToDelete = r->nextRoom;
+      r->nextRoom = roomToDelete->nextRoom;
+      roomToDelete->nextRoom = NULL;
+      _freeRoom(&roomToDelete);
+    }
+
+    r = r->nextRoom;
+  }
+  _saveHotel(*hotel);
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+void a(Room *hotel) {
+  if (!hotel) return;
+
+  Room *r = hotel;
+  int id = _intin();
+  int newSize = _intin();
+  bool changed = false;
+
+  while (r) {
+    if (r->id == id) {
+      r->size = newSize;
+      changed = true;
+    }
+    r = r->nextRoom;
+  }
+
+  if (changed) {
+    _saveHotel(hotel);
+  }
+
+  printf("Izba cislo %d ma lozkovu kapacitu %d\n", id, newSize);
 }
 
 // main
@@ -378,17 +479,33 @@ int main() {
   Room *hotel = NULL;
   bool loop = true;
   while (loop) {
+    printf("$: ");
     switch (_chin()) {
-      case 'n': n(&hotel, true); break;
-      case 'v': v(hotel); break;
-      case 'r': r(); n(&hotel, false); break;
-      case 'h': h(hotel); break;
-      case 'k': loop = false; break;
+      case 'n':
+        n(&hotel, true);
+        break;
+      case 'v':
+        v(hotel);
+        break;
+      case 'r':
+        r(&hotel);
+        break;
+      case 'h':
+        h(hotel);
+        break;
+      case 'z':
+        z(&hotel);
+        break;
+      case 'a':
+        a(hotel);
+        break;
+      case 'k':
+        loop = false;
+        break;
     }
   }
-  
-  _printHotel(hotel);
-  _freeRoom(hotel);
+
+  _freeRoom(&hotel);
 
   return 0;
 }
